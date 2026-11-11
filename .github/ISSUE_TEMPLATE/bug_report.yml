@@ -1,0 +1,63 @@
+name: Bug report
+description: Something sticky does wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The board holds what Claude asked you in a session, and its replies may hold your code. Never paste a real one here: describe it, or invent an example. A security vulnerability goes through a [private report](https://github.com/serionist/claude-sticky/security/advisories/new).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      multiple: true
+      options:
+        [
+          "Pinning or unpinning",
+          "Answering by number",
+          "Answer buttons or send",
+          "The reply check (catchAsks)",
+          "Notifications",
+          "The band",
+          "The pane or /sticky",
+          "Keys",
+          "A board after a resume or restart",
+          "Other",
+        ]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin and Claude Code versions
+      placeholder: "sticky 0.1.0, Claude Code 2.1.321 (claude --version)"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Surface, system and terminal
+      description: The terminal, the desktop app, an IDE or the web; for a terminal, its width in columns if the band or the pane is involved.
+      placeholder: Terminal, Windows 11, Windows Terminal 1.23, 160 columns
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, and what the board did. `claude --debug` writes a line for each hook that failed, and sticky writes one there when a board was not saved, a notification failed or a reply was not read; include them, with any private text removed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: Nothing above holds a real prompt, reply or board item I shouldn't share, or a key, token or password.
+          required: true

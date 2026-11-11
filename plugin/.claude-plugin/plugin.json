@@ -1,0 +1,34 @@
+{
+  "name": "sticky",
+  "version": "0.1.0",
+  "description": "A board fixed beside the conversation: what Claude needs from you, what is in progress, and what you should not miss.",
+  "author": {
+    "name": "Soma Osvay",
+    "url": "https://github.com/serionist"
+  },
+  "homepage": "https://github.com/serionist/claude-sticky",
+  "repository": "https://github.com/serionist/claude-sticky",
+  "license": "MIT",
+  "keywords": ["board", "questions", "asks", "notifications", "long-sessions"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "notify": {
+      "type": "boolean",
+      "title": "Notify me of a new ask while I am away",
+      "description": "Raises a notification when Claude pins an ask and you have not typed or pressed anything for two minutes.",
+      "default": true
+    },
+    "catchAsks": {
+      "type": "boolean",
+      "title": "Catch questions Claude did not pin",
+      "description": "At the end of each turn a small model reads Claude's reply and pins what it asks of you that is not on the board. One short Haiku call per turn.",
+      "default": true
+    },
+    "showKeys": {
+      "type": "boolean",
+      "title": "Show the board's keys",
+      "description": "Lists the keys that work on the board in its last row.",
+      "default": true
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "./.claude-plugin/types/tsconfig.json",
+  "compilerOptions": {
+    // The engine's MCP types hold one entry per tool of every connected server; with many servers they pass
+    // TypeScript's depth limit (TS2589). The mod names its own tools as strings and needs none of them.
+    "types": ["claude-code", "claude-code-tools"]
+  }
+}

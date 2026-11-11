@@ -1,0 +1,17 @@
+{
+  "name": "sticky",
+  "owner": {
+    "name": "Soma Osvay",
+    "url": "https://github.com/serionist"
+  },
+  "metadata": {
+    "description": "The sticky plugin for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "sticky",
+      "source": "./plugin",
+      "description": "A board fixed beside the conversation: what Claude needs from you, what is in progress, and what you should not miss."
+    }
+  ]
+}
