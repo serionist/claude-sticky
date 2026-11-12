@@ -36,7 +36,7 @@ Run these again when a change touches them.
 |---|---|
 | pinning and numbering | each item under its number; a number never given twice in the session, even after unpins |
 | answering by number | `1: yes` in a message, and Claude unpins ask 1; `1?` gets more on it, and it stays pinned |
-| pressed answers | press an answer on two asks, then `a`: one message of yours, a line per ask, and both asks gone |
+| pressed answers | with Claude idle, press an answer on two asks, then `a`: one message of yours, a line per ask, and both asks gone |
 | the reply check | Claude ends a turn with a question it did not pin: within seconds an ask "from the reply" appears |
 | details | **more** opens the detail, `e` opens them all, `/sticky 1` opens or closes item 1's |
 | statuses, tones and a job | each item's status in its tone's colour; a job as one line with a dot per part and a count per status, and **more** listing its parts (the README's screenshot) |
@@ -48,6 +48,8 @@ Two more have run only in the tests. Until a live run is recorded, try them too:
 |---|---|---|
 | moving a job's parts | "Pin an epic of four issues as one job, statuses queued, then move one to in review and one to merged" | `1 merged · 1 in review · 2 queued` on the job's line; Claude moved the parts by number, naming only the status |
 | background work | start a background shell, end the turn | the shell listed with its status; a subagent never listed |
+| answers held during a turn | "Pin an ask with the options yes and no, then run `sleep 60` in the shell and stop"; press an answer and `a` while the sleep runs | the last row says the answer goes to Claude when the turn ends, and the ask stays; when the turn ends, one message of yours, once, its text white as soon as Claude replies; Claude does not get it a second time |
+| answers after a stop | pin an ask with the options yes and no; start a long turn and stop it with `esc`; without typing anything, press an answer and `a` | either one message of yours and the ask gone, or a toast saying Claude Code did not take the answers, the text in your prompt box, and the ask still on the board with its answer marked; Enter then sends it. Note which of the two happened |
 
 ## Also worth a look
 

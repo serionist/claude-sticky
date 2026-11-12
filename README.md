@@ -56,7 +56,12 @@ Answer in your reply with the number: `2: keep them`, or `2b` for the second ans
 more about item 2. Claude takes an ask off the board when your reply settles it.
 
 You can also press the answers on the board. Press one per ask, then **send**, and they go out as one message of
-yours. If Claude is working, the message waits for the turn to end.
+yours. If Claude is working, the board holds them and sends them when the turn ends. Press **don't send** to take
+that back. They are not sent by themselves after a turn you interrupted.
+
+An ask leaves the board only once Claude Code has taken its answer. After you stop a turn, Claude Code takes
+nothing from a plugin until you send something yourself: the answers then stay marked and are put in your prompt
+box, and Enter sends them.
 
 A board of more than 10 lines moves to a pane beside the transcript and comes back when it is short again. `/sticky`
 moves it by hand, and `/sticky 3` opens or closes the detail of item 3.
@@ -111,12 +116,12 @@ The text on the board goes into the session's own model requests and nowhere els
 - A terminal raises a notification at once, through iTerm2, kitty, Ghostty or a plain bell. Only the desktop app can
   hold one until you are away, so the two-minute rule stands in for that.
 - The list of background shells is refreshed when a turn ends, not while it runs.
-- Answers you send while Claude is working may reach it twice: once in the running turn and once as a turn of their
-  own.
+- Answers you press while Claude is working reach it when the turn ends, not during it. A reply you type is read
+  during the turn.
 
 These have not been tried in a live session yet: closing the pane by hand, the jump from a number to the transcript,
-a board after a real restart, notifications on Windows Terminal, the list of background shells, and Claude changing
-the status of a job's part. [docs/testing-by-hand.md](docs/testing-by-hand.md) has the steps for each.
+a board after a real restart, notifications on Windows Terminal, the list of background shells, Claude changing
+the status of a job's part, answers held until a turn ends, and answers sent right after you stop a turn. [docs/testing-by-hand.md](docs/testing-by-hand.md) has the steps for each.
 
 ## Uninstall
 

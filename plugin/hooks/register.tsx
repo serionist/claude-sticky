@@ -1,9 +1,8 @@
 import type { EngineInterface, Register, RenderInput } from 'claude-code'
 import { atom, read, update } from 'claude-code'
 
-import type { Board, Item, Kind, Layout, Picks, Spent, Task, Tone } from '../types'
+import type { Board, Item, Kind, Layout, Picks, Sending, Spent, Task, Tone } from '../types'
 
-const NAME = 'sticky'
 const PIN = 'mcp__sticky__pin'
 const UNPIN = 'mcp__sticky__unpin'
 const PANE = 'sticky'
@@ -14,6 +13,8 @@ const PANE_COLUMNS = 48
 const MINUTE_MS = 60_000
 // Without a prompt or a press for this long, the person counts as away.
 const AWAY_MS = 2 * MINUTE_MS
+// How long after a turn ends its held answers go out: by then the session is idle for the engine too.
+const IDLE_MS = 300
 // The most asks the board adds from one reply, and how much of the reply's
 // end the small model reads to find them.
 const CAUGHT_AT_MOST = 3
@@ -27,6 +28,7 @@ const AUTO: Layout = { mode: 'auto', isInPane: false }
 const NONE: string[] = []
 const NO_PICKS: Picks = {}
 const NOTHING_SPENT: Spent = { calls: 0, input: 0, output: 0 }
+const NOT_SENDING: Sending = 'none'
 
 // Change a tag when the value's fields change: it declines what an earlier
 // version stored, which outlives a reload.
@@ -45,6 +47,8 @@ const owner = atom({ plugin: 'sticky', key: 'owner' } as const, '')
 const spent = atom({ plugin: 'sticky', key: 'spent' } as const, NOTHING_SPENT)
 // The list of keys in the last row is closed until the person asks for it with `k`.
 const keysOpen = atom({ plugin: 'sticky', key: 'isKeysOpen' } as const, false)
+// Where the pressed answers stand between the person's send and their turn's start.
+const sending = atom({ plugin: 'sticky', key: 'sending' } as const, NOT_SENDING)
 
 const SECTION = `# Sticky board
 
@@ -345,6 +349,8 @@ let isShowingKeys = true
 let lastSeen = 0
 let lastReply = ''
 const notified = new Set<string>()
+// Whether a turn of the main conversation runs now: answers pressed meanwhile wait for its end.
+let isTurnRunning = false
 
 const tell = async ($: EngineInterface, item: Item) => {
   if (!isNotifying || (await $.clock.now()) - lastSeen < AWAY_MS) {
@@ -381,24 +387,85 @@ const remove = async ($: EngineInterface, ids: readonly string[]) => {
   untell($, ids)
 }
 
-/** Sends the pressed answers as one message of the person's. */
-const send = async ($: EngineInterface) => {
+/** What became of answers handed to Claude Code: their message entered, or was not taken, and why. */
+const settle = async ($: EngineInterface, ids: readonly string[], text: string, refusal: string | undefined) => {
+  await update($, sending, () => NOT_SENDING)
+
+  if (refusal === undefined) {
+    await remove($, ids)
+
+    return
+  }
+
+  // Not taken: after the person stops a turn, Claude Code holds what plugins send until they send something
+  // themselves. The answers stay marked, and go into the prompt box, which it always takes.
+  const filled = await $.prompt.fill({ text, mode: 'append' }).catch(() => undefined)
+
+  $.ui.toast(
+    filled?.isFilled
+      ? `Sticky: Claude Code did not take the answers from the board (${refusal}). They are in your prompt box: press Enter to send them.`
+      : `Sticky: Claude Code did not take the answers (${refusal}). They are still marked on the board.`,
+    { timeoutMs: 12_000 },
+  )
+}
+
+/**
+ * Hands the pressed answers to Claude Code as one message of the person's. Their asks stay on the board until the
+ * message has entered: Claude Code may refuse or hold a plugin's prompt, and an answer must not vanish unsent.
+ */
+const dispatch = async ($: EngineInterface) => {
   const chosen = await read($, picks)
   const answered = (await read($, board)).items.filter(item => item.kind === 'ask' && chosen[item.id] !== undefined)
 
   if (answered.length === 0) {
+    await update($, sending, () => NOT_SENDING)
+
     return
   }
 
-  await remove(
-    $,
-    answered.map(item => item.id),
-  )
-  // Queued behind a running turn: it resolves only when its own turn starts.
-  void $.prompt.submit({
-    text: answered.map(item => `${item.id}: ${chosen[item.id]} (to: ${item.text})`).join('\n'),
-    asUser: true,
-  })
+  const text = answered.map(item => `${item.id}: ${chosen[item.id]} (to: ${item.text})`).join('\n')
+  const ids = answered.map(item => item.id)
+
+  await update($, sending, () => 'sent')
+  // It settles when the message's turn starts, or with why it was not taken: nothing waits on it here.
+  void $.prompt
+    .submit({ text, asUser: true })
+    .then(
+      entered => entered.drop,
+      (error: unknown) => String(error),
+    )
+    .then(refusal => settle($, ids, text, refusal))
+    .catch(error => $.ui.log(`sticky: what became of the answers was not recorded (${String(error)})`, { to: 'debug' }))
+}
+
+/**
+ * The person's press of send. While a turn runs the answers are held, and a
+ * second press takes that back: Claude Code folds a prompt submitted during a
+ * turn into that turn and then runs it again as a turn of its own, its row
+ * left grey as one that still waits.
+ */
+const send = async ($: EngineInterface) => {
+  const state = await read($, sending)
+
+  // Already with Claude Code: a second message would answer twice.
+  if (state === 'sent') {
+    return
+  }
+
+  if (isTurnRunning) {
+    await update($, sending, () => (state === 'held' ? 'none' : 'held'))
+
+    return
+  }
+
+  await dispatch($)
+}
+
+/** Sends the held answers once no turn runs; a turn that started meanwhile sends them at its own end. */
+const flush = async ($: EngineInterface) => {
+  if (!isTurnRunning && (await read($, sending)) === 'held') {
+    await dispatch($)
+  }
 }
 
 /** Pins what a reply asks of the person that Claude left off the board. */
@@ -476,6 +543,8 @@ type View = {
   /** The `showKeys` setting: whether the last row offers the list of keys at all. */
   showsKeys: boolean
   isKeysOpen: boolean
+  /** Where the pressed answers stand: held for the turn's end, or with Claude Code. */
+  sending: Sending
 }
 
 /** What the board draws from, read while drawing so a change draws again. */
@@ -493,6 +562,7 @@ const look = async ($: EngineInterface, columns: number, isPane: boolean): Promi
     columns,
     showsKeys: isShowingKeys,
     isKeysOpen: await read($, keysOpen),
+    sending: await read($, sending),
   }
 }
 
@@ -707,12 +777,18 @@ const draw = ($: EngineInterface, e: RenderInput, view: View) => {
       {isFull && (
         <Box flexWrap="wrap" columnGap={2}>
           {hasKeys && <Text dimColor>press ctrl+x, then tab, to use these keys:</Text>}
-          {picked > 0 && (
+          {picked > 0 && view.sending === 'sent' && (
+            <Text color="success">sending {count(picked, 'answer', 'answers')}</Text>
+          )}
+          {picked > 0 && view.sending === 'held' && (
+            <Text color="success">{count(picked, 'answer goes', 'answers go')} to Claude when this turn ends</Text>
+          )}
+          {picked > 0 && view.sending !== 'sent' && (
             <Button
               key="send"
               plain
               hotkey="a"
-              label={`send ${count(picked, 'answer', 'answers')}`}
+              label={view.sending === 'held' ? "don't send" : `send ${count(picked, 'answer', 'answers')}`}
               onPress={() => void send($)}
             />
           )}
@@ -822,6 +898,8 @@ export const register: Register = (on, options) => {
     })
 
     lastSeen = await $.clock.now()
+    // A load starts with nothing on its way: the environment that waited on a send is gone with its promise.
+    await update($, sending, () => NOT_SENDING)
     await adopt($)
     // The ages on the board move on by the minute.
     $.clock.every(MINUTE_MS, async () => {
@@ -949,8 +1027,9 @@ export const register: Register = (on, options) => {
   // The person's message carries the board as it stands, so Claude unpins what
   // the message settles and still knows the numbers after a compaction.
   on('prompt.submit', async ($, e, next) => {
-    const isPressed = e.origin.kind === 'plugin' && e.origin.name === NAME
-    const isTheirs = (isPressed || PERSON.includes(e.origin.kind)) && e.isMeta !== true && e.command === undefined
+    // The board's own message of pressed answers does not pass here: the engine keeps a plugin's prompt from that
+    // plugin's hooks.
+    const isTheirs = PERSON.includes(e.origin.kind) && e.isMeta !== true && e.command === undefined
 
     if (!isTheirs) {
       return next(e)
@@ -960,19 +1039,19 @@ export const register: Register = (on, options) => {
     await adopt($)
 
     const { items } = await read($, board)
-    const standing = [
-      isPressed &&
-        'The person pressed these answers on the sticky board, which has already removed the asks they answer: there is nothing to unpin for them.',
-      items.length > 0 &&
-        [
-          'The sticky board as the person sees it now, each item under its number:',
-          ...items.map(listed),
-          'They may answer an ask by its number ("2: keep them") or by its number and the letter of an answer ("2b"): read a number that leads an answer as that item. A number with a question mark ("2?") asks you to say more about that item: answer here and leave it pinned.',
-          `Unpin each ask this message answers, and anything else now settled, with ${UNPIN}. Leave the rest pinned.`,
-        ].join('\n'),
-    ].filter(text => typeof text === 'string')
 
-    return standing.length === 0 ? next(e) : next({ ...e, context: [...(e.context ?? []), ...standing] })
+    if (items.length === 0) {
+      return next(e)
+    }
+
+    const standing = [
+      'The sticky board as the person sees it now, each item under its number:',
+      ...items.map(listed),
+      'They may answer an ask by its number ("2: keep them") or by its number and the letter of an answer ("2b"): read a number that leads an answer as that item. A number with a question mark ("2?") asks you to say more about that item: answer here and leave it pinned.',
+      `Unpin each ask this message answers, and anything else now settled, with ${UNPIN}. Leave the rest pinned.`,
+    ].join('\n')
+
+    return next({ ...e, context: [...(e.context ?? []), standing] })
   })
 
   // As a turn ends the engine lists the background work still in flight, and
@@ -1017,8 +1096,38 @@ export const register: Register = (on, options) => {
       await update($, picks, () => NO_PICKS)
       await update($, owner, () => '')
       await update($, spent, () => NOTHING_SPENT)
+      await update($, sending, () => NOT_SENDING)
       untell($, [...notified])
       await arrange($)
+    }
+
+    return next(e)
+  })
+
+  on('turn.start', (_$, e, next) => {
+    if (e.agentId === undefined) {
+      isTurnRunning = true
+    }
+
+    return next(e)
+  })
+
+  // Answers held during the turn go out once it is over. One the person interrupted, or that failed, sends nothing by
+  // itself: the answers stay marked, for them to send when they are ready.
+  on('turn.complete', async ($, e, next) => {
+    if (e.agentId === undefined) {
+      isTurnRunning = false
+
+      if ((await read($, sending)) === 'held') {
+        if (e.reason === 'answer') {
+          // On a timer: while this hook runs the turn still counts as running for the engine.
+          $.clock.after(IDLE_MS, () => {
+            void flush($).catch(error => $.ui.log(`sticky: the answers were not sent (${String(error)})`))
+          })
+        } else {
+          await update($, sending, () => NOT_SENDING)
+        }
+      }
     }
 
     return next(e)
