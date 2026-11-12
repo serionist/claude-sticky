@@ -1,7 +1,7 @@
 import type { EngineInterface, Register, RenderInput } from 'claude-code'
 import { atom, read, update } from 'claude-code'
 
-import type { Board, Item, Kind, Layout, Picks, Task, Tone } from '../types'
+import type { Board, Item, Kind, Layout, Picks, Spent, Task, Tone } from '../types'
 
 const NAME = 'sticky'
 const PIN = 'mcp__sticky__pin'
@@ -26,6 +26,7 @@ const EMPTY: Board = { seq: 0, items: [] }
 const AUTO: Layout = { mode: 'auto', isInPane: false }
 const NONE: string[] = []
 const NO_PICKS: Picks = {}
+const NOTHING_SPENT: Spent = { calls: 0, input: 0, output: 0 }
 
 // Change a tag when the value's fields change: it declines what an earlier
 // version stored, which outlives a reload.
@@ -40,6 +41,8 @@ const open = atom({ plugin: 'sticky', key: 'open' } as const, NONE)
 const picks = atom({ plugin: 'sticky', key: 'picks' } as const, NO_PICKS)
 const clock = atom({ plugin: 'sticky', key: 'now' } as const, 0)
 const owner = atom({ plugin: 'sticky', key: 'owner' } as const, '')
+// What the reply check has used in the session, for `/sticky usage`.
+const spent = atom({ plugin: 'sticky', key: 'spent' } as const, NOTHING_SPENT)
 
 const SECTION = `# Sticky board
 
@@ -126,6 +129,9 @@ const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
 const letter = (index: number) => String.fromCharCode(97 + index)
+
+/** A count with commas between its thousands. */
+const withCommas = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 /** How long ago, in a word: nothing under a minute, then 5m, 3h, 2d. */
 const age = (ms: number) => {
@@ -404,6 +410,14 @@ const catchAsks = async ($: EngineInterface, reply: string) => {
     maxTokens: 300,
     effort: 'low',
   })
+  // A call that brought no answer used its tokens all the same.
+  const used = answer.usage
+
+  await update($, spent, now => ({
+    calls: now.calls + 1,
+    input: now.input + used.input_tokens + used.cache_read_input_tokens + used.cache_creation_input_tokens,
+    output: now.output + used.output_tokens,
+  }))
 
   if (!answer.isAnswered) {
     return
@@ -782,8 +796,9 @@ export const register: Register = (on, options) => {
     })
     await $.command.register({
       name: 'sticky',
-      description: 'Move the sticky board to the side or back; with a number, open or close that item',
-      argumentHint: '[number]',
+      description:
+        'Move the sticky board to the side or back; with a number, open or close that item; with "usage", report what the reply check has used',
+      argumentHint: '[number | usage]',
       immediate: true,
     })
 
@@ -982,6 +997,7 @@ export const register: Register = (on, options) => {
       await update($, open, () => NONE)
       await update($, picks, () => NO_PICKS)
       await update($, owner, () => '')
+      await update($, spent, () => NOTHING_SPENT)
       untell($, [...notified])
       await arrange($)
     }
@@ -1000,6 +1016,20 @@ export const register: Register = (on, options) => {
         text: (await read($, layout)).isInPane
           ? 'The sticky board is in its pane.'
           : 'The sticky board is above the prompt.',
+      }
+    }
+
+    if (id === 'usage') {
+      const { calls, input, output } = await read($, spent)
+
+      return {
+        text: [
+          `The reply check has made ${count(calls, 'Haiku call', 'Haiku calls')} in this session:`,
+          `${withCommas(input)} tokens in, ${withCommas(output)} out.`,
+          !isCatching && 'It is switched off now (catchAsks).',
+        ]
+          .filter(Boolean)
+          .join(' '),
       }
     }
 

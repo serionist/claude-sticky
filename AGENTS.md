@@ -99,7 +99,7 @@ in `0.x` a minor may break one, under CHANGELOG's Breaking.
 - the plugin's and the marketplace's name, `sticky`;
 - the tools' names (`mcp__sticky__pin`, `mcp__sticky__unpin`), their arguments and the five tones: a permission rule
   or a habit names them;
-- the `/sticky` command and its argument (a number);
+- the `/sticky` command and its argument (a number, or `usage`);
 - the `notify`, `catchAsks` and `showKeys` settings, their names and their meaning;
 - how answers read: a number, `<n>: <answer>`, `<n><letter>`, `<n>?`, and the pressed answers' message;
 - the saved board, `board:<session id>` in the plugin's store, and the `Board` and `Item` fields: a new version reads

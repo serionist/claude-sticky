@@ -17,7 +17,7 @@ screen through `$.ui`, its saved boards through `$.store`, and the small model t
 
 ## State
 
-Seven atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
+Eight atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 
 | Atom | What |
 |---|---|
@@ -28,6 +28,7 @@ Seven atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 | `picks` | the answer pressed for each ask, until it is sent |
 | `now` | the time the ages are drawn from, moved on each minute while the board holds anything |
 | `owner` | the session id the board belongs to |
+| `spent` | the reply check's calls and their tokens in the session |
 
 `board` and `tasks` carry a shape tag (`board-1`, `tasks-1`). Change the tag when their fields change: the engine
 then declines a value an earlier version kept, which outlives a reload.
@@ -79,6 +80,9 @@ As a turn ends (`classic.Stop`), with `catchAsks` on, a reply that is not empty,
 Stop hook's own continuation is read on a timer, so the turn does not wait. `catchAsks` sends Haiku (`effort: low`,
 300 tokens at most) `CATCH_SYSTEM`, the asks on the board, and the last 6,000 characters of the reply. Each line it
 answers as `ASK: <question>` becomes an ask with `isCaught`, three at most.
+
+Each call adds its usage to `spent`, answered or not: one call, the tokens it read (the cached ones included) and
+the tokens it wrote. `/sticky usage` reports the session's count, and a `/clear` or a resume starts it again.
 
 The small model still repeats a pinned ask now and then, reworded. `isRepeat` drops a found question when at least
 three quarters of the words of the shorter text (the question, or an ask on the board with its answers) are in the

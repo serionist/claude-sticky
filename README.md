@@ -91,7 +91,8 @@ sticky adds text to what Claude reads, and `catchAsks` makes one model call per 
 - The two tools, `pin` and `unpin`, are about 3,000 characters (some 750 tokens).
 - Each message you type carries the board, one line per item. An empty board adds nothing.
 - `catchAsks` is one short Haiku call per turn end. It gets the last 6,000 characters of the reply and answers with at
-  most 300 tokens. It runs after the turn, so the turn does not wait for it.
+  most 300 tokens. It runs after the turn, so the turn does not wait for it. `/sticky usage` reports how many
+  calls it has made in the session and their tokens.
 
 ## What it keeps
 
