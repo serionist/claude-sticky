@@ -10,6 +10,11 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 
 - `/sticky usage` reports how many Haiku calls the reply check has made in the session, and their tokens.
 
+### Changed
+
+- The board's last row lists its keys only after you press `k` (**keys**); before, it listed them on every
+  board. `showKeys` now decides whether **keys** is there.
+
 ## 0.1.0 (2026-11-12)
 
 The first public release.

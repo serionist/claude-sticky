@@ -17,7 +17,7 @@ screen through `$.ui`, its saved boards through `$.store`, and the small model t
 
 ## State
 
-Eight atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
+Nine atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 
 | Atom | What |
 |---|---|
@@ -29,6 +29,7 @@ Eight atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 | `now` | the time the ages are drawn from, moved on each minute while the board holds anything |
 | `owner` | the session id the board belongs to |
 | `spent` | the reply check's calls and their tokens in the session |
+| `isKeysOpen` | whether the list of keys in the last row is open |
 
 `board` and `tasks` carry a shape tag (`board-1`, `tasks-1`). Change the tag when their fields change: the engine
 then declines a value an earlier version kept, which outlives a reload.
@@ -116,7 +117,8 @@ The tree: a status line, then the asks, progress (jobs in their place), backgrou
 number (padded so they line up), its status in its tone's colour, its age, "from the reply" for a caught ask, its answer
 buttons (beside the line when they fit, under it when not), **more** or **less** for a detail, and **×**. The last row
 holds **send** (`a`, once an answer is pressed), **expand** or **collapse** (`e`, when any item has a detail or there is
-a job), **to the side** or **above the prompt** (`s`), and, with `showKeys`, the keys.
+a job), **to the side** or **above the prompt** (`s`), and, with `showKeys`, **keys** (`k`), which opens and closes
+the list of the other keys and of how to answer by number. The list is closed until the person opens it.
 
 ## Pressed answers
 

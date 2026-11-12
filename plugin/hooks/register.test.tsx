@@ -538,26 +538,41 @@ test('a detail opens by its mark, by the key for all and by /sticky', async ($, 
   expect(await shown($, BAND)).toContain(detail)
 })
 
-test('the last row lists the keys', async ($, on) => {
+test('the last row lists the keys once k opens the list', async ($, on) => {
   await engine($, on)
   await pin($, 'ask', 'Merge to main?')
 
+  // Closed, the row holds the board's own actions and the key that opens the list.
+  const closed = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await closed.find({ key: 'keys' }))?.props.hotkey).toBe('k')
+  await closed.unmount()
+  expect(await shown($, BAND)).not.toContain('ctrl+x')
+  expect(await shown($, BAND)).toContain('to the side')
+
+  await press($, 'keys')
+
   const band = await shown($, BAND)
+  expect(band).toContain('hide keys')
   // How to give the board the keyboard comes before the keys it then takes.
   expect(band.indexOf('press ctrl+x, then tab, to use these keys:')).toBeGreaterThan(-1)
   expect(band.indexOf('press ctrl+x, then tab')).toBeLessThan(band.indexOf('to the side'))
   expect(band).toContain('ctrl+x ctrl+a: hide')
   expect(band).toContain('reply "1: yes", or "1?" to hear more')
   expect(await shown($, PANE)).toContain('ctrl+x x: close')
+
+  await press($, 'keys')
+  expect(await shown($, BAND)).not.toContain('ctrl+x')
 })
 
 test('the keys are left out when switched off', { options: { showKeys: false } }, async ($, on) => {
   await engine($, on)
   await pin($, 'ask', 'Merge to main?')
 
-  const band = await shown($, BAND)
-  expect(band).not.toContain('ctrl+x')
-  expect(band).toContain('to the side')
+  const band = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await band.find({ key: 'keys' })).toBeUndefined()
+  expect(await band.find({ key: 'side' })).toBeDefined()
+  await band.unmount()
+  expect(await shown($, BAND)).not.toContain('ctrl+x')
 })
 
 test('answers pressed on the board are sent as one message', async ($, on) => {

@@ -27,7 +27,7 @@
     "showKeys": {
       "type": "boolean",
       "title": "Show the board's keys",
-      "description": "Lists the keys that work on the board in its last row.",
+      "description": "Puts a keys entry in the board's last row: press k there to list the keys that work on the board.",
       "default": true
     }
   }
