@@ -6,6 +6,8 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 
 ## Unreleased
 
+## 0.2.0 (2026-11-12)
+
 ### Added
 
 - `/sticky usage` reports how many Haiku calls the reply check has made in the session, and their tokens.
