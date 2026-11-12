@@ -40,6 +40,9 @@ export type Task = { id: string; type: string; label: string; status?: string }
  */
 export type Layout = { mode: 'auto' | 'pane' | 'band'; isInPane: boolean }
 
+/** What the reply check has used in the session: its Haiku calls and their tokens. */
+export type Spent = { calls: number; input: number; output: number }
+
 /** The answer the person pressed for an ask, by its number, until it is sent. */
 export type Picks = Record<string, string>
 
@@ -56,6 +59,8 @@ declare module 'claude-code' {
       now: number
       /** The id of the session the board belongs to; empty before the first. */
       owner: string
+      /** The reply check's calls and tokens in this session, which `/sticky usage` reports. */
+      spent: Spent
     }
   }
 }

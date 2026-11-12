@@ -91,9 +91,9 @@ const engine = async ($: Engine, on: On, world: World = {}) => {
       isAnswered: true,
       text: world.found ?? 'NONE',
       usage: {
-        input_tokens: 1,
-        output_tokens: 1,
-        cache_read_input_tokens: 0,
+        input_tokens: 1200,
+        output_tokens: 14,
+        cache_read_input_tokens: 300,
         cache_creation_input_tokens: 0,
       },
     },
@@ -432,6 +432,28 @@ test('an item whose kind changes sheds what only the old kind takes', async ($, 
   const drawn = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await drawn.find({ type: 'Text', text: /^1 !$/ }))?.props.color).toBe('suggestion')
   await drawn.unmount()
+})
+
+test("/sticky usage reports the reply check's calls and tokens", async ($, on) => {
+  const { time } = await engine($, on)
+
+  expect((await sticky($, 'usage')).text).toBe(
+    'The reply check has made 0 Haiku calls in this session: 0 tokens in, 0 out.',
+  )
+
+  // Each call counts what it read, the cached part included, and what it wrote.
+  await $.classic.Stop({ stop_hook_active: false, last_assistant_message: 'All done.' })
+  await time.settle()
+  await $.classic.Stop({ stop_hook_active: false, last_assistant_message: 'The tests pass.' })
+  await time.settle()
+
+  expect((await sticky($, 'usage')).text).toBe(
+    'The reply check has made 2 Haiku calls in this session: 3,000 tokens in, 28 out.',
+  )
+
+  // A /clear starts the count again with the session.
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } })
+  expect((await sticky($, 'usage')).text).toContain('0 Haiku calls')
 })
 
 // Not covered: the person closing the pane by hand. The kit raises no
