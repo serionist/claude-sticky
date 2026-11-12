@@ -6,6 +6,8 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 
 ## Unreleased
 
+## 0.2.1 (2026-11-12)
+
 ### Fixed
 
 - Answers sent from the board while Claude was working reached it twice, and their row stayed grey as a prompt
