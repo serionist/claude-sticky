@@ -7,7 +7,7 @@ people and AI agents alike, and [REVIEW.md](REVIEW.md) what a review checks.
 
 - **Open an issue** for anything beyond a typo, with the bug or feature form. Say there that you want to work on it.
 - **Write a plan first** for a non-trivial change: a new kind of item, a change to the text Claude reads (the system
-  prompt's section, the tools, the context on each prompt, the reply check), to how the board is saved, or to
+  prompt's section, the tools, the context on each prompt), to how the board is saved, or to
   `/sticky`. Use the template in [docs/plans/README.md](docs/plans/README.md) and open it as a draft PR. A maintainer
   approves it before any code.
 - **Leave the one-way doors alone** unless the maintainer agrees in the issue first: the plugin's name, the tools'

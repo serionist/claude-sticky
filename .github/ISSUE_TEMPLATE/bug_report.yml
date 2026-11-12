@@ -16,7 +16,6 @@ body:
           "Pinning or unpinning",
           "Answering by number",
           "Answer buttons or send",
-          "The reply check (catchAsks)",
           "Notifications",
           "The band",
           "The pane or /sticky",
@@ -45,7 +44,7 @@ body:
     id: what-happened
     attributes:
       label: What happened
-      description: What you did, and what the board did. `claude --debug` writes a line for each hook that failed, and sticky writes one there when a board was not saved, a notification failed or a reply was not read; include them, with any private text removed.
+      description: What you did, and what the board did. `claude --debug` writes a line for each hook that failed, and sticky writes one there when a board was not saved or a notification failed; include them, with any private text removed.
     validations:
       required: true
   - type: textarea

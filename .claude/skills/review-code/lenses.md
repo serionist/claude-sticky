@@ -35,20 +35,18 @@ Real bugs a user would hit; the lenses below are where this plugin breaks most, 
 
 ## what-claude-reads
 
-Applies when: the scope touches `SECTION`, `PIN_DOC`, `UNPIN_DOC`, the tools' schemas, the context `prompt.submit`
-adds, or `CATCH_SYSTEM`.
+Applies when: the scope touches `SECTION`, `PIN_DOC`, `UNPIN_DOC`, the tools' schemas, or the context
+`prompt.submit` adds.
 
 - Does the text still say what the code does (the numbers, the letters, "2?", statuses, tones, jobs, what pressed
   answers look like)?
 - What does it add to every session, in characters and roughly in tokens, and do README's figures still hold?
-- `CATCH_SYSTEM`: is the reply still framed as text to read, never as instructions, and can a reply that says
-  otherwise make the small model write more than `ASK:` lines the board takes?
 
 ## person-safety
 
 - Does anything send a prompt as the person's (`$.prompt.submit` with `asUser`) without their press of **send**, or
   with text they did not choose?
-- Does what is on the board, or a reply, leave the session's own Claude Code calls and the plugin's store, or reach a
+- Does what is on the board leave the session's own Claude Code calls and the plugin's store, or reach a
   log another tool reads?
 - Can one session's board show, or be changed, in another (`adopt`, `owner`, `session.end`)?
 
@@ -96,7 +94,7 @@ scenario (the two copies already disagree).
 
 - The terminal and the desktop app, where the band draws, and the surfaces that draw only the pane.
 - A terminal under 144 columns, where a pane opened unasked is not placed; a terminal under 110.
-- Each setting off: `notify`, `catchAsks`, `showKeys`.
+- Each setting off: `notify`, `showKeys`.
 - The Claude Code versions the README names: an API only newer releases have needs the README's floor to move.
 
 ## harness-integrity

@@ -1,7 +1,6 @@
 # Testing by hand
 
-What no test reaches: the engine's test kit draws the band and the pane and mocks the clock, the store and the small
-model, but it raises no close of the person's, scrolls no transcript, restarts nothing and sends no notification
+What no test reaches: the engine's test kit draws the band and the pane and mocks the clock and the store, but it raises no close of the person's, scrolls no transcript, restarts nothing and sends no notification
 anywhere. Run this before a release that changes how the board draws, saves or notifies, and fill in the record at the
 end.
 
@@ -37,7 +36,6 @@ Run these again when a change touches them.
 | pinning and numbering | each item under its number; a number never given twice in the session, even after unpins |
 | answering by number | `1: yes` in a message, and Claude unpins ask 1; `1?` gets more on it, and it stays pinned |
 | pressed answers | with Claude idle, press an answer on two asks, then `a`: one message of yours, a line per ask, and both asks gone |
-| the reply check | Claude ends a turn with a question it did not pin: within seconds an ask "from the reply" appears |
 | details | **more** opens the detail, `e` opens them all, `/sticky 1` opens or closes item 1's |
 | statuses, tones and a job | each item's status in its tone's colour; a job as one line with a dot per part and a count per status, and **more** listing its parts (the README's screenshot) |
 | the pane | `/sticky` moves the board beside the transcript, and the band keeps its first line |
@@ -55,7 +53,7 @@ Two more have run only in the tests. Until a live run is recorded, try them too:
 
 - The desktop app: the band draws; the pane draws; a notification waits until you are away.
 - A terminal under 144 columns: a long board stays in the band; `/sticky` still opens the pane.
-- `/config`: each of `notify`, `catchAsks` and `showKeys` turned off does what the README says.
+- `/config`: each of `notify` and `showKeys` turned off does what the README says.
 
 ## Recording it
 

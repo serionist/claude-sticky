@@ -7,17 +7,17 @@ are in [AGENTS.md](../AGENTS.md).
 
 | File | What |
 |---|---|
-| `plugin/hooks/register.tsx` | everything: the two tools, the system prompt's section, the board's state, the reply check, the notifications, `/sticky`, and the drawing of the band and the pane, jobs included |
+| `plugin/hooks/register.tsx` | everything: the two tools, the system prompt's section, the board's state, the notifications, `/sticky`, and the drawing of the band and the pane, jobs included |
 | `plugin/hooks/register.test.tsx` | the tests, run by `claude plugin test plugin` in the engine's sandbox: a stand-in engine beneath the plugin, the clock and the store mocked |
 | `plugin/types/index.d.ts` | `Kind`, `Tone`, `Item`, `Board`, `Task`, `Layout`, `Picks`, and the plugin's `$.state` values under `sticky` |
-| `plugin/.claude-plugin/plugin.json` | the manifest and the three settings, `notify`, `catchAsks`, `showKeys` |
+| `plugin/.claude-plugin/plugin.json` | the manifest and the two settings, `notify` and `showKeys` |
 
 The hooks module runs inside Claude Code, with no Node and no DOM. It reaches the session through `$.session`, the
-screen through `$.ui`, its saved boards through `$.store`, and the small model through `$.model`.
+screen through `$.ui` and its saved boards through `$.store`. It makes no model calls.
 
 ## State
 
-Ten atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
+Nine atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 
 | Atom | What |
 |---|---|
@@ -28,7 +28,6 @@ Ten atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 | `picks` | the answer pressed for each ask, until it is sent |
 | `now` | the time the ages are drawn from, moved on each minute while the board holds anything |
 | `owner` | the session id the board belongs to |
-| `spent` | the reply check's calls and their tokens in the session |
 | `isKeysOpen` | whether the list of keys in the last row is open |
 | `sending` | where pressed answers stand: `none`, `held` for the running turn's end, or `sent`, with Claude Code and not yet a turn |
 
@@ -66,30 +65,17 @@ Both tools register with `isDeferred: false`, so Claude has them from the first 
 ## What Claude reads
 
 - **The system prompt** (`prompt.compose`) gains the section `sticky:board`, `SECTION` in the code, scoped to the
-  session. A `bare` prompt gets none.
+  session. A `bare` prompt gets none. It makes a question Claude's reply puts to the person, and needs answered, an
+  ask to pin before the turn ends: nothing reads the reply afterwards.
 - **Each prompt the person typed** (`prompt.submit`, origin `composer`, `bridge` or `sdk`, not meta, not a command) gets
   the board as context: each item under its number, with its kind, its status, its job (`in "<group>"`), its answers
-  lettered, and "found in your last reply" for a caught ask; then how numbered answers read, and to unpin what the
+  lettered; then how numbered answers read, and to unpin what the
   message settles. Nothing is added to a prompt nobody typed, or when the board is empty. The board's own message
   of pressed answers never passes this hook: the engine keeps a plugin's prompt from that plugin's hooks, so it
   reaches Claude bare, and the system prompt's section says its asks are already off the board.
 
 The board travels with the message, not only in the system prompt, so Claude still has the numbers after a
 compaction.
-
-## The reply check
-
-As a turn ends (`classic.Stop`), with `catchAsks` on, a reply that is not empty, not the last one read, and not from a
-Stop hook's own continuation is read on a timer, so the turn does not wait. `catchAsks` sends Haiku (`effort: low`,
-300 tokens at most) `CATCH_SYSTEM`, the asks on the board, and the last 6,000 characters of the reply. Each line it
-answers as `ASK: <question>` becomes an ask with `isCaught`, three at most.
-
-Each call adds its usage to `spent`, answered or not: one call, the tokens it read (the cached ones included) and
-the tokens it wrote. `/sticky usage` reports the session's count, and a `/clear` or a resume starts it again.
-
-The small model still repeats a pinned ask now and then, reworded. `isRepeat` drops a found question when at least
-three quarters of the words of the shorter text (the question, or an ask on the board with its answers) are in the
-other; filler words and bare numbers are left out.
 
 ## Jobs
 
@@ -116,7 +102,7 @@ The status line counts each part under "in progress"; `arrange` counts a job as 
   is long.
 
 The tree: a status line, then the asks, progress (jobs in their place), background tasks and notes, each under its
-number (padded so they line up), its status in its tone's colour, its age, "from the reply" for a caught ask, its answer
+number (padded so they line up), its status in its tone's colour, its age, its answer
 buttons (beside the line when they fit, under it when not), **more** or **less** for a detail, and **×**. The last row
 holds **send** (`a`, once an answer is pressed), **expand** or **collapse** (`e`, when any item has a detail or there is
 a job), **to the side** or **above the prompt** (`s`), and, with `showKeys`, **keys** (`k`), which opens and closes
@@ -149,7 +135,7 @@ have settled a `sent` is gone with the old environment.
 
 ## Notifications
 
-When an ask is pinned or caught, `tell` raises a notification (title "Claude is waiting on you", the ask's text, key
+When an ask is pinned, `tell` raises a notification (title "Claude is waiting on you", the ask's text, key
 `ask:<n>`) if `notify` is on and the person has not typed a prompt, run `/sticky` or pressed anything for `AWAY_MS`
 (two minutes). Removing the ask cancels it, and so does a `/clear` or a resume. A terminal raises it at once through
 whichever channel Claude Code uses there.

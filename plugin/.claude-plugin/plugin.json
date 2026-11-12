@@ -18,12 +18,6 @@
       "description": "Raises a notification when Claude pins an ask and you have not typed or pressed anything for two minutes.",
       "default": true
     },
-    "catchAsks": {
-      "type": "boolean",
-      "title": "Catch questions Claude did not pin",
-      "description": "At the end of each turn a small model reads Claude's reply and pins what it asks of you that is not on the board. One short Haiku call per turn.",
-      "default": true
-    },
     "showKeys": {
       "type": "boolean",
       "title": "Show the board's keys",

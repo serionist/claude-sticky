@@ -6,6 +6,18 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 
 ## Unreleased
 
+### Breaking
+
+- The reply check is removed, with its `catchAsks` setting. A small model read each of Claude's replies and pinned
+  the questions it asked without pinning them; in use it mostly repeated asks already pinned, and pinned closing
+  offers. The plugin now makes no model calls. An ask it pinned on a saved board stays, as an ordinary ask.
+- `/sticky usage` is removed with it: it reported the reply check's calls.
+
+### Changed
+
+- The system prompt's section tells Claude that a question its reply puts to you, and needs answered, is an ask
+  to pin before the turn ends.
+
 ## 0.2.1 (2026-11-12)
 
 ### Fixed

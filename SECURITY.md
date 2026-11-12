@@ -1,8 +1,7 @@
 # Security
 
-sticky runs inside every Claude Code session it is on. It adds text to what Claude reads, sends messages as yours
-when you press **send**, and hands the end of each of Claude's replies to a small model. A flaw here runs with your
-rights, in every session.
+sticky runs inside every Claude Code session it is on. It adds text to what Claude reads, and sends messages as yours
+when you press **send**. A flaw here runs with your rights, in every session.
 
 ## Report a vulnerability
 
@@ -18,9 +17,7 @@ crediting you unless you ask otherwise.
 ## What counts
 
 - A message sent as the person's that they did not press **send** for, or text in it they did not choose.
-- Text in a reply, a tool's output or a file that makes the reply check pin something worse than a question, or makes
-  the board act: the reply is read as text, never as instructions.
-- What is on the board, or a reply, reaching anywhere but the session's own Claude Code calls and the plugin's store
+- What is on the board reaching anywhere but the session's own Claude Code calls and the plugin's store
   on the person's machine.
 - One session's board shown or changed in another session.
 
