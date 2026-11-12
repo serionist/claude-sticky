@@ -43,6 +43,8 @@ const clock = atom({ plugin: 'sticky', key: 'now' } as const, 0)
 const owner = atom({ plugin: 'sticky', key: 'owner' } as const, '')
 // What the reply check has used in the session, for `/sticky usage`.
 const spent = atom({ plugin: 'sticky', key: 'spent' } as const, NOTHING_SPENT)
+// The list of keys in the last row is closed until the person asks for it with `k`.
+const keysOpen = atom({ plugin: 'sticky', key: 'isKeysOpen' } as const, false)
 
 const SECTION = `# Sticky board
 
@@ -310,6 +312,8 @@ const toggleAll = async ($: EngineInterface) => {
   await update($, open, now => (all.every(id => now.includes(id)) ? [] : all))
 }
 
+const toggleKeys = ($: EngineInterface) => update($, keysOpen, now => !now)
+
 /** Marks an ask's answer, or takes the mark back when it is pressed again. */
 const pick = ($: EngineInterface, id: string, option: string) =>
   update($, picks, now =>
@@ -469,7 +473,9 @@ type View = {
   /** False for the band's one line while the pane holds the list. */
   isFull: boolean
   columns: number
+  /** The `showKeys` setting: whether the last row offers the list of keys at all. */
   showsKeys: boolean
+  isKeysOpen: boolean
 }
 
 /** What the board draws from, read while drawing so a change draws again. */
@@ -486,6 +492,7 @@ const look = async ($: EngineInterface, columns: number, isPane: boolean): Promi
     isFull: isPane || !isInPane,
     columns,
     showsKeys: isShowingKeys,
+    isKeysOpen: await read($, keysOpen),
   }
 }
 
@@ -511,6 +518,8 @@ const draw = ($: EngineInterface, e: RenderInput, view: View) => {
   const detailed = openable(items)
   const isAllOpen = detailed.every(id => opened.includes(id))
   const picked = asks.filter(item => view.picks[item.id] !== undefined).length
+  // The list is long, so it shows only once the person opens it with `k`.
+  const hasKeys = view.showsKeys && view.isKeysOpen
   const keys = [
     'tab, enter: press one',
     'esc: back to the prompt',
@@ -697,7 +706,7 @@ const draw = ($: EngineInterface, e: RenderInput, view: View) => {
       {isFull && notes.map(row)}
       {isFull && (
         <Box flexWrap="wrap" columnGap={2}>
-          {view.showsKeys && <Text dimColor>press ctrl+x, then tab, to use these keys:</Text>}
+          {hasKeys && <Text dimColor>press ctrl+x, then tab, to use these keys:</Text>}
           {picked > 0 && (
             <Button
               key="send"
@@ -725,7 +734,17 @@ const draw = ($: EngineInterface, e: RenderInput, view: View) => {
             label={isInPane ? 'above the prompt' : 'to the side'}
             onPress={() => void move($)}
           />
-          {view.showsKeys && keys.map(text => <Text dimColor>{text}</Text>)}
+          {view.showsKeys && (
+            <Button
+              key="keys"
+              plain
+              dimColor
+              hotkey="k"
+              label={view.isKeysOpen ? 'hide keys' : 'keys'}
+              onPress={() => void toggleKeys($)}
+            />
+          )}
+          {hasKeys && keys.map(text => <Text dimColor>{text}</Text>)}
         </Box>
       )}
     </Box>

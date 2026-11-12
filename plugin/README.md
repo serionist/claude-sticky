@@ -24,7 +24,7 @@ Settings (in `/config`), all on by default:
 - `notify`: a notification when an ask lands and you have not typed or pressed anything for two minutes.
 - `catchAsks`: at each turn end, one short Haiku call reads Claude's reply and pins questions it asked but did not
   pin, leaving out those the board already holds.
-- `showKeys`: the row of keys at the bottom of the board.
+- `showKeys`: **keys** in the board's last row, which lists the keys when you press `k`.
 
 Install it at the prompt with `/plugin install sticky --marketplace serionist/claude-sticky`.
 

@@ -61,6 +61,8 @@ declare module 'claude-code' {
       owner: string
       /** The reply check's calls and tokens in this session, which `/sticky usage` reports. */
       spent: Spent
+      /** Whether the list of keys in the board's last row is open. */
+      isKeysOpen: boolean
     }
   }
 }

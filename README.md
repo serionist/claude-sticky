@@ -61,7 +61,7 @@ yours. If Claude is working, the message waits for the turn to end.
 A board of more than 10 lines moves to a pane beside the transcript and comes back when it is short again. `/sticky`
 moves it by hand, and `/sticky 3` opens or closes the detail of item 3.
 
-The keys are listed in the last row of the board:
+The last row of the board holds its own actions and **keys**. Press `k` there, or click it, to list every key:
 
 | Keys | What they do |
 |---|---|
@@ -70,6 +70,7 @@ The keys are listed in the last row of the board:
 | `a` | send the answers you pressed |
 | `e` | open or close every detail and job |
 | `s` | move the board to the side, or back |
+| `k` | list the keys, or hide the list |
 | `esc` | go back to the prompt |
 | `ctrl+x ctrl+a` | hide the band |
 | `ctrl+x x` | close the pane |
@@ -81,7 +82,7 @@ They are in `/config` under the plugin, and all three are on by default.
 - `notify` raises a notification when Claude pins an ask and you have not typed or pressed anything for two minutes.
 - `catchAsks` has a small model read Claude's reply at the end of each turn and pin up to three questions that Claude
   asked without pinning them. They are marked "from the reply".
-- `showKeys` shows the row of keys.
+- `showKeys` puts **keys** in the last row, which lists the keys when you press `k`.
 
 ## What it costs
 
