@@ -82,23 +82,18 @@ The last row of the board holds its own actions and **keys**. Press `k` there, o
 
 ## Settings
 
-They are in `/config` under the plugin, and all three are on by default.
+They are in `/config` under the plugin, and both are on by default.
 
 - `notify` raises a notification when Claude pins an ask and you have not typed or pressed anything for two minutes.
-- `catchAsks` has a small model read Claude's reply at the end of each turn and pin up to three questions that Claude
-  asked without pinning them. They are marked "from the reply".
 - `showKeys` puts **keys** in the last row, which lists the keys when you press `k`.
 
 ## What it costs
 
-sticky adds text to what Claude reads, and `catchAsks` makes one model call per turn.
+sticky adds text to what Claude reads. It makes no model calls of its own.
 
 - The system prompt gets a section of about 3,300 characters (some 800 tokens) on how to use the board.
-- The two tools, `pin` and `unpin`, are about 3,000 characters (some 750 tokens).
+- The two tools, `pin` and `unpin`, are about 3,300 characters (some 800 tokens).
 - Each message you type carries the board, one line per item. An empty board adds nothing.
-- `catchAsks` is one short Haiku call per turn end. It gets the last 6,000 characters of the reply and answers with at
-  most 300 tokens. It runs after the turn, so the turn does not wait for it. `/sticky usage` reports how many
-  calls it has made in the session and their tokens.
 
 ## What it keeps
 

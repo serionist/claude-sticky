@@ -2,7 +2,7 @@
 
 A non-trivial change gets a plan here before any code: a new capability (a kind of item, a way to answer), a change
 to a one-way door (`AGENTS.md`), to the text Claude reads (the system prompt's section, the tools, the context on each
-prompt, the reply check), to the saved board's fields, a change that touches several hooks at once, a Claude Code API
+prompt), to the saved board's fields, a change that touches several hooks at once, a Claude Code API
 the plugin has not used before. A fix a reviewer can follow
 from the PR alone needs none; its PR says `Trivial: <why>`.
 

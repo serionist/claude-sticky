@@ -15,15 +15,13 @@ are listed by themselves as each turn ends. Each item has a number and stays unt
   board and send them as one message.
 - **Details** open under an item; its age shows; its number jumps to where it was pinned.
 - **A long board** (more than 10 lines, a job counting as one) moves to a pane beside the transcript. `/sticky`
-  moves it by hand; `/sticky 3` opens item 3's detail; `/sticky usage` reports the reply check's calls and tokens.
+  moves it by hand; `/sticky 3` opens item 3's detail.
 - **Keys:** `ctrl+x`, then `tab`, gives the board the keyboard; then `a` sends answers, `e` opens every detail and
   job, `s` moves the board, `esc` goes back to the prompt.
 
-Settings (in `/config`), all on by default:
+Settings (in `/config`), both on by default:
 
 - `notify`: a notification when an ask lands and you have not typed or pressed anything for two minutes.
-- `catchAsks`: at each turn end, one short Haiku call reads Claude's reply and pins questions it asked but did not
-  pin, leaving out those the board already holds.
 - `showKeys`: **keys** in the board's last row, which lists the keys when you press `k`.
 
 Install it at the prompt with `/plugin install sticky --marketplace serionist/claude-sticky`.

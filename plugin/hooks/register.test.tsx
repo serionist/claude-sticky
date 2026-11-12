@@ -47,8 +47,6 @@ type World = {
   isWide?: boolean
   /** What the plugin's store holds as the session starts. */
   kept?: Record<string, unknown>
-  /** What the small model answers when it reads a reply. */
-  found?: string
   /** Why Claude Code takes no prompt from a plugin, when it takes none. */
   refuses?: string
 }
@@ -99,18 +97,6 @@ const engine = async ($: Engine, on: On, world: World = {}) => {
   on('turn.complete', (_, e) => ({ text: e.answer }))
   on('prompt.compose', () => ({
     sections: [{ id: 'intro', text: 'You are Claude.', scope: 'shared' }],
-  }))
-  on('model.complete', () => ({
-    value: {
-      isAnswered: true,
-      text: world.found ?? 'NONE',
-      usage: {
-        input_tokens: 1200,
-        output_tokens: 14,
-        cache_read_input_tokens: 300,
-        cache_creation_input_tokens: 0,
-      },
-    },
   }))
   on('ui.notify', (_, e) => {
     seen.push(`notify: ${e.text}`)
@@ -448,28 +434,6 @@ test('an item whose kind changes sheds what only the old kind takes', async ($, 
   await drawn.unmount()
 })
 
-test("/sticky usage reports the reply check's calls and tokens", async ($, on) => {
-  const { time } = await engine($, on)
-
-  expect((await sticky($, 'usage')).text).toBe(
-    'The reply check has made 0 Haiku calls in this session: 0 tokens in, 0 out.',
-  )
-
-  // Each call counts what it read, the cached part included, and what it wrote.
-  await $.classic.Stop({ stop_hook_active: false, last_assistant_message: 'All done.' })
-  await time.settle()
-  await $.classic.Stop({ stop_hook_active: false, last_assistant_message: 'The tests pass.' })
-  await time.settle()
-
-  expect((await sticky($, 'usage')).text).toBe(
-    'The reply check has made 2 Haiku calls in this session: 3,000 tokens in, 28 out.',
-  )
-
-  // A /clear starts the count again with the session.
-  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } })
-  expect((await sticky($, 'usage')).text).toContain('0 Haiku calls')
-})
-
 // Not covered: the person closing the pane by hand. The kit raises no
 // `ui.close` of theirs, so that path is checked in a session.
 
@@ -718,66 +682,6 @@ test('answers pressed on the board are sent as one message', async ($, on) => {
   expect(after).not.toContain('Auth token expiry?')
   expect(after).toContain('Who reviews the release notes?')
   expect(after).not.toContain('send')
-})
-
-test('an ask left out of the board is found in the reply', async ($, on) => {
-  const { time } = await engine($, on, {
-    found: 'ASK: Merge the  release branch to main?\nnot a line of it\nASK: Tag it v2.1?',
-  })
-
-  await $.classic.Stop({
-    stop_hook_active: false,
-    last_assistant_message: 'All green. Should I merge and tag it?',
-  })
-  await time.settle()
-
-  const band = await shown($, BAND)
-  expect(band).toContain('Merge the release branch to main?')
-  expect(band).toContain('from the reply')
-  expect(band).toContain('2 asks')
-
-  const entered = await $.prompt.submit({ text: 'yes to both', ...TYPED })
-  expect(entered.context?.join(' ')).toContain('- 2 (ask, found in your last reply): Tag it v2.1?')
-})
-
-test('a question the board already holds is not found again', async ($, on) => {
-  const { time } = await engine($, on, {
-    found: [
-      'ASK: Which name should the plugin use: sticky, pinned, corkboard, or afk (ask 1)?',
-      'ASK: Should the tests run now?',
-    ].join('\n'),
-  })
-  await $.tool.call({
-    tool: PIN,
-    kind: 'ask',
-    text: 'Name for the plugin?',
-    options: ['sticky', 'pinned', 'corkboard', 'afk'],
-  })
-  await pin($, 'ask', 'Run the migration now?')
-
-  await $.classic.Stop({
-    stop_hook_active: false,
-    last_assistant_message: 'Pick a name (ask 1). Should the tests run now?',
-  })
-  await time.settle()
-
-  // The reworded ask is left out; one that only shares a few words is kept.
-  const band = await shown($, BAND)
-  expect(band).toContain('3 asks')
-  expect(band).toContain('Should the tests run now?')
-  expect(band).not.toContain('Which name')
-})
-
-test('no reply is read when that is switched off', { options: { catchAsks: false } }, async ($, on) => {
-  const { time } = await engine($, on, { found: 'ASK: Merge to main?' })
-
-  await $.classic.Stop({
-    stop_hook_active: false,
-    last_assistant_message: 'Should I merge it?',
-  })
-  await time.settle()
-
-  expect(await shown($, BAND)).toBe('engine')
 })
 
 test('an ask raises a notification only while the person is away', async ($, on) => {

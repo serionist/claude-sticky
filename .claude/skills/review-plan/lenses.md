@@ -33,14 +33,14 @@ are read.
 ## what-claude-reads
 
 Applies when: the plan adds or changes text Claude reads: the system prompt's section, the tools, the context on each
-prompt, the reply check's instructions.
+prompt.
 
-What does it cost in every session, and is it worth that? Does the reply check still read a reply only as text?
+What does it cost in every session, and is it worth that?
 
 ## person-safety
 
-Does anything the plan adds send a prompt as the person's without their press, send the board or a reply anywhere
-new, or show one session's board in another?
+Does anything the plan adds send a prompt as the person's without their press, send the board anywhere new, make a model
+call from the plugin, or show one session's board in another?
 
 ## saved-boards
 

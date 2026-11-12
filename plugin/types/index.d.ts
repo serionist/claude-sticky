@@ -21,8 +21,6 @@ export type Item = {
   at?: number
   /** The transcript row it was pinned from: the pin call's tool_use_id. */
   ref?: string
-  /** True for an ask the mod found in a reply, which Claude had not pinned. */
-  isCaught?: boolean
 }
 
 /**
@@ -39,9 +37,6 @@ export type Task = { id: string; type: string; label: string; status?: string }
  * /sticky, `band` their closing of the pane. `isInPane`: the pane draws it now.
  */
 export type Layout = { mode: 'auto' | 'pane' | 'band'; isInPane: boolean }
-
-/** What the reply check has used in the session: its Haiku calls and their tokens. */
-export type Spent = { calls: number; input: number; output: number }
 
 /**
  * Where pressed answers stand: `held` waits for the running turn to end, `sent` is with Claude Code, which has
@@ -65,8 +60,6 @@ declare module 'claude-code' {
       now: number
       /** The id of the session the board belongs to; empty before the first. */
       owner: string
-      /** The reply check's calls and tokens in this session, which `/sticky usage` reports. */
-      spent: Spent
       /** Whether the list of keys in the board's last row is open. */
       isKeysOpen: boolean
       sending: Sending

@@ -3,7 +3,7 @@ name: review-code
 description: >-
   Use when code needs a review: a branch's change before its PR is ready ("review this", "is this ready",
   finish-work's review step), someone's PR ("review PR 14"), or a folder or the repo as it stands ("review the
-  plugin", "review the reply check"). A fresh reviewer applies REVIEW.md and lenses.md, refutes each finding and reports
+  plugin", "review the pane"). A fresh reviewer applies REVIEW.md and lenses.md, refutes each finding and reports
   only real, reproducible problems with their scenario, plus improvements; on your own branch the findings are fixed;
   each round is written to docs/reviews/; another round only after a blocker or a major.
 ---

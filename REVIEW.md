@@ -14,7 +14,7 @@ why it matters to a user, their sessions or the next change.
 
 | Severity | What it is |
 |---|---|
-| blocker | a message sent as the person's that they did not send; a reply or a tool's output that steers the board or the reply check; the board or a reply sent anywhere new; one session's board shown in another; a one-way door broken; a check loosened |
+| blocker | a message sent as the person's that they did not send; a model call made by the plugin; the board sent anywhere new; one session's board shown in another; a one-way door broken; a check loosened |
 | major | a real user hits it in normal use: an ask lost or never shown, an item that will not leave, a number given twice, an answer read as the wrong item, a Claude session that fails to start or a prompt that fails to send with the plugin on, a turn held up by the plugin, new behaviour without a test |
 | minor | everything else that is real: an edge case few meet, a missing doc line, a clumsy message |
 
@@ -42,8 +42,7 @@ Each is a yes or no; a "no" is a finding.
 4. For a change a test can't reach (closing the pane, the scroll, a notification, a restart, how Claude reads the
    new text): does the PR say how it was tried by hand, on which system, terminal and Claude Code version, and what
    it could not show?
-5. Does the plugin still send nothing as the person's but what they pressed, and read a reply only as text, never as
-   instructions?
+5. Does the plugin still send nothing as the person's but what they pressed, and make no model call of its own?
 6. Does what Claude reads stay small: is every line added to the system prompt, the tools or each prompt's context
    worth its tokens in every session, and do README's cost figures still hold?
 7. Can a newer version read every board an older one kept, and does a change to the fields move the shape tag?
