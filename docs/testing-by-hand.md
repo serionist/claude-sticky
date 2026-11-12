@@ -49,6 +49,7 @@ Two more have run only in the tests. Until a live run is recorded, try them too:
 | moving a job's parts | "Pin an epic of four issues as one job, statuses queued, then move one to in review and one to merged" | `1 merged · 1 in review · 2 queued` on the job's line; Claude moved the parts by number, naming only the status |
 | background work | start a background shell, end the turn | the shell listed with its status; a subagent never listed |
 | answers held during a turn | "Pin an ask with the options yes and no, then run `sleep 60` in the shell and stop"; press an answer and `a` while the sleep runs | the last row says the answer goes to Claude when the turn ends, and the ask stays; when the turn ends, one message of yours, once, its text white as soon as Claude replies; Claude does not get it a second time |
+| answers after a stop | pin an ask with the options yes and no; start a long turn and stop it with `esc`; without typing anything, press an answer and `a` | either one message of yours and the ask gone, or a toast saying Claude Code did not take the answers, the text in your prompt box, and the ask still on the board with its answer marked; Enter then sends it. Note which of the two happened |
 
 ## Also worth a look
 

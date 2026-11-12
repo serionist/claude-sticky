@@ -30,7 +30,7 @@ Ten atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 | `owner` | the session id the board belongs to |
 | `spent` | the reply check's calls and their tokens in the session |
 | `isKeysOpen` | whether the list of keys in the last row is open |
-| `isSendHeld` | whether pressed answers wait for the running turn to end |
+| `sending` | where pressed answers stand: `none`, `held` for the running turn's end, or `sent`, with Claude Code and not yet a turn |
 
 `board` and `tasks` carry a shape tag (`board-1`, `tasks-1`). Change the tag when their fields change: the engine
 then declines a value an earlier version kept, which outlives a reload.
@@ -70,8 +70,9 @@ Both tools register with `isDeferred: false`, so Claude has them from the first 
 - **Each prompt the person typed** (`prompt.submit`, origin `composer`, `bridge` or `sdk`, not meta, not a command) gets
   the board as context: each item under its number, with its kind, its status, its job (`in "<group>"`), its answers
   lettered, and "found in your last reply" for a caught ask; then how numbered answers read, and to unpin what the
-  message settles. A prompt the board itself sent (pressed answers) gets a line saying those asks are already gone.
-  Nothing is added to a prompt nobody typed, or when the board is empty.
+  message settles. Nothing is added to a prompt nobody typed, or when the board is empty. The board's own message
+  of pressed answers never passes this hook: the engine keeps a plugin's prompt from that plugin's hooks, so it
+  reaches Claude bare, and the system prompt's section says its asks are already off the board.
 
 The board travels with the message, not only in the system prompt, so Claude still has the numbers after a
 compaction.
@@ -123,17 +124,28 @@ the list of the other keys and of how to answer by number. The list is closed un
 
 ## Pressed answers
 
-A press marks an answer in `picks`; a second press on the same answer takes it back. **send** removes the answered
-asks, then submits one prompt as the person's (`asUser: true`), a line per ask, `<n>: <answer> (to: <text>)`.
+A press marks an answer in `picks`; a second press on the same answer takes it back. **send** submits one prompt as
+the person's (`asUser: true`), a line per ask, `<n>: <answer> (to: <text>)`, and sets `sending` to `sent`: the last
+row says so, and send is gone until the prompt settles.
+
+`$.prompt.submit` settles when the prompt's turn starts, or with a `drop` and its reason. `settle` takes the asks
+off the board only when it entered. Claude Code refuses a plugin's prompt in some states: after the person
+stopped a turn it takes none until they send something themselves ("the session was stopped and nobody has sent
+input since"), unless it counts the call as their own press. A refused or failed prompt leaves the asks and their
+marked answers where they were, appends the text to the person's prompt box (`$.prompt.fill`), which Claude Code
+always takes from, and says so in a toast. An answer is never dropped unseen.
 
 Nothing is submitted while a turn of the main conversation runs (`isTurnRunning`, from `turn.start` and
 `turn.complete` with no `agentId`). On Claude Code 2.1.321 a prompt a plugin submits during a turn is folded into
 that turn as a queued command and then runs again as a turn of its own, and its row stays grey meanwhile, as a
-prompt that still waits. So **send** during a turn only sets `isSendHeld`: the asks stay, the last row says the
+prompt that still waits. So **send** during a turn only sets `sending` to `held`: the asks stay, the last row says the
 answers go out when the turn ends, and **don't send** takes it back. When the turn completes with an answer, a
 timer of `IDLE_MS` (300 ms) lets the engine go idle, then `flush` submits; if another turn has started by then,
 the answers wait for that one. A turn that was interrupted or failed clears the hold and sends nothing: the
 answers stay marked for the person to send.
+
+`session.start` sets `sending` back to `none`: it runs on every load, and after a reload the promise that would
+have settled a `sent` is gone with the old environment.
 
 ## Notifications
 

@@ -43,6 +43,12 @@ export type Layout = { mode: 'auto' | 'pane' | 'band'; isInPane: boolean }
 /** What the reply check has used in the session: its Haiku calls and their tokens. */
 export type Spent = { calls: number; input: number; output: number }
 
+/**
+ * Where pressed answers stand: `held` waits for the running turn to end, `sent` is with Claude Code, which has
+ * not started their turn yet.
+ */
+export type Sending = 'none' | 'held' | 'sent'
+
 /** The answer the person pressed for an ask, by its number, until it is sent. */
 export type Picks = Record<string, string>
 
@@ -63,8 +69,7 @@ declare module 'claude-code' {
       spent: Spent
       /** Whether the list of keys in the board's last row is open. */
       isKeysOpen: boolean
-      /** Whether pressed answers wait for the running turn to end before they are sent. */
-      isSendHeld: boolean
+      sending: Sending
     }
   }
 }

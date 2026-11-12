@@ -11,6 +11,10 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 - Answers sent from the board while Claude was working reached it twice, and their row stayed grey as a prompt
   that still waits. The board now holds them and sends them once, when the turn ends; **don't send** takes that
   back, and a turn you interrupt sends nothing by itself.
+- Answers could vanish from the board without reaching Claude: after you stop a turn, Claude Code takes nothing
+  from a plugin until you send something yourself, and the board took the asks off before it knew. An ask now
+  leaves the board only once its answer was taken; a refused answer stays marked and is put in your prompt box,
+  for Enter to send.
 
 ## 0.2.0 (2026-11-12)
 

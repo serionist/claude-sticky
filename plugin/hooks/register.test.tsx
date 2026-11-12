@@ -49,6 +49,8 @@ type World = {
   kept?: Record<string, unknown>
   /** What the small model answers when it reads a reply. */
   found?: string
+  /** Why Claude Code takes no prompt from a plugin, when it takes none. */
+  refuses?: string
 }
 
 // Each hook here stands for the engine beneath the plugin. `seen` records what
@@ -57,6 +59,7 @@ type World = {
 const engine = async ($: Engine, on: On, world: World = {}) => {
   const seen: string[] = []
   const sent: string[] = []
+  const filled: string[] = []
   const store = new Map(Object.entries(world.kept ?? {}))
   const time = mock.clock(on, { now: START })
 
@@ -78,9 +81,18 @@ const engine = async ($: Engine, on: On, world: World = {}) => {
     return { value: undefined }
   })
   on('prompt.submit', (_, e) => {
+    if (world.refuses !== undefined && e.origin.kind === 'plugin') {
+      return { drop: world.refuses }
+    }
+
     sent.push(e.text)
 
     return { text: e.text, context: e.context }
+  })
+  on('prompt.fill', (_, e) => {
+    filled.push(e.text)
+
+    return { isFilled: true }
   })
   on('classic.Stop', () => ({}))
   on('turn.start', (_, e) => ({ turnId: e.turnId }))
@@ -135,7 +147,7 @@ const engine = async ($: Engine, on: On, world: World = {}) => {
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
 
-  return { seen, sent, store, time }
+  return { seen, sent, filled, store, time }
 }
 
 const pin = ($: Engine, kind: string, text: string) => $.tool.call({ tool: PIN, kind, text })
@@ -645,6 +657,25 @@ test('answers held when the next turn starts at once go out after that one', asy
   await $.turn.complete({ ...done, turnId: 't2' })
   await time.advance(1000)
   expect(sent).toEqual(['1: yes (to: Run the migration now?)'])
+})
+
+test('answers Claude Code does not take stay marked and go into the prompt box', async ($, on) => {
+  const stopped = 'the session was stopped and nobody has sent input since'
+  const { sent, seen, filled } = await engine($, on, { refuses: stopped })
+  await $.tool.call({ tool: PIN, kind: 'ask', text: 'Run the migration now?', options: ['yes', 'no'] })
+
+  await press($, 'pick:1:0')
+  await press($, 'send')
+
+  expect(sent).toEqual([])
+  expect(filled).toEqual(['1: yes (to: Run the migration now?)'])
+  expect(seen.at(-1)).toContain(stopped)
+  expect(seen.at(-1)).toContain('press Enter')
+
+  // Nothing is lost: the ask and its answer are where they were, and send is there again.
+  const band = await shown($, BAND)
+  expect(band).toContain('Run the migration now?')
+  expect(band).toContain('send 1 answer')
 })
 
 test('answers pressed on the board are sent as one message', async ($, on) => {
