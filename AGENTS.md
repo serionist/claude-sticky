@@ -28,7 +28,7 @@ miss. The repo is its own marketplace.
 | `.githooks/` | `commit-msg` refuses attribution, `pre-push` runs gate quick on what the push sends, `post-checkout` and `post-merge` name changed AI setup files |
 | `.claude/` | `CLAUDE.md` (imports this file), `settings.json` (no attribution; allows read-only git and gh, plus the repo's own checks), `skills/` (below) |
 | `.agents/skills/` | links to `.claude/skills/<name>` for Codex, written into git's index by `node tools/setup.ts link` |
-| `.github/` | CI, CodeQL, the PR text check, the release, Dependabot, issue forms, the PR template, CODEOWNERS |
+| `.github/` | CI, CodeQL, the PR text check, the release, Dependabot and `dependabot-auto-merge.yml` (turns on auto-merge for its minor and patch updates), issue forms, the PR template, CODEOWNERS |
 | `AGENTS.md`, `REVIEW.md` | this file; what a review finding is, and the questions every review answers |
 | `.mcp.json` | Context7 over HTTP; `.claude/settings.local.json.example` turns it on |
 | `package.json`, `package-lock.json`, `.npmrc`, `.nvmrc` | the dev tools, pinned exactly (Claude Code, Biome, TypeScript); no install scripts; Node 24 |
@@ -86,6 +86,9 @@ The skills in `.claude/skills/` run this loop: `start-work` (1 to 3), `review-pl
 
 - A plain imperative subject that says what changed; a body that says why, ending `Refs #<n>` or `Closes #<n>`.
 - PRs are squash-merged: the PR title becomes the subject on `main`, its description the body.
+- A Dependabot PR's squash message keeps only its title and a line naming what moved: its description quotes other
+  projects' release notes. A minor or patch update merges itself once `CI` passes, unless its PR is a draft, and
+  `dependabot-auto-merge.yml` writes that line; a major waits for the maintainer, who cuts the message at merge.
 - No tool attribution anywhere: no AI co-author trailers, no "Generated with" lines, no session links, in commits,
   PR titles or PR bodies. `commit-msg` refuses them, the gate checks every message, and CI checks the PR's text.
 - **Versions:** users get a change only when `plugin.json`'s version moves. A release PR sets it and dates the

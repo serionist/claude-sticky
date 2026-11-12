@@ -1,7 +1,7 @@
 # Dependabot version updates, weekly: the dev tools in package-lock.json (Claude Code, Biome, TypeScript, Node's
-# types) and the actions the workflows pin by SHA. Each group is a PR like any other: CI must pass and the maintainer
-# merges it. Security updates come as soon as an advisory is published, whatever the schedule; the cooldowns hold
-# version updates only.
+# types) and the actions the workflows pin by SHA. Each group is a PR: CI must pass, then a minor or patch update
+# merges itself (dependabot-auto-merge.yml) and a major waits for the maintainer. Security updates come as soon as an
+# advisory is published, whatever the schedule; the cooldowns hold version updates only.
 version: 2
 
 updates:
