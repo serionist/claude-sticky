@@ -63,6 +63,8 @@ declare module 'claude-code' {
       spent: Spent
       /** Whether the list of keys in the board's last row is open. */
       isKeysOpen: boolean
+      /** Whether pressed answers wait for the running turn to end before they are sent. */
+      isSendHeld: boolean
     }
   }
 }

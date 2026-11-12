@@ -6,6 +6,12 @@ in the same PR; `docs/releasing.md` says how a release dates it.
 
 ## Unreleased
 
+### Fixed
+
+- Answers sent from the board while Claude was working reached it twice, and their row stayed grey as a prompt
+  that still waits. The board now holds them and sends them once, when the turn ends; **don't send** takes that
+  back, and a turn you interrupt sends nothing by itself.
+
 ## 0.2.0 (2026-11-12)
 
 ### Added

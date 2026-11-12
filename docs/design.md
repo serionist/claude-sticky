@@ -17,7 +17,7 @@ screen through `$.ui`, its saved boards through `$.store`, and the small model t
 
 ## State
 
-Nine atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
+Ten atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 
 | Atom | What |
 |---|---|
@@ -30,6 +30,7 @@ Nine atoms under `sticky` in `$.state`, declared in `types/index.d.ts`:
 | `owner` | the session id the board belongs to |
 | `spent` | the reply check's calls and their tokens in the session |
 | `isKeysOpen` | whether the list of keys in the last row is open |
+| `isSendHeld` | whether pressed answers wait for the running turn to end |
 
 `board` and `tasks` carry a shape tag (`board-1`, `tasks-1`). Change the tag when their fields change: the engine
 then declines a value an earlier version kept, which outlives a reload.
@@ -123,8 +124,16 @@ the list of the other keys and of how to answer by number. The list is closed un
 ## Pressed answers
 
 A press marks an answer in `picks`; a second press on the same answer takes it back. **send** removes the answered
-asks, then submits one prompt as the person's (`asUser: true`), a line per ask, `<n>: <answer> (to: <text>)`. A turn
-running at that moment holds it in the queue until the turn ends.
+asks, then submits one prompt as the person's (`asUser: true`), a line per ask, `<n>: <answer> (to: <text>)`.
+
+Nothing is submitted while a turn of the main conversation runs (`isTurnRunning`, from `turn.start` and
+`turn.complete` with no `agentId`). On Claude Code 2.1.321 a prompt a plugin submits during a turn is folded into
+that turn as a queued command and then runs again as a turn of its own, and its row stays grey meanwhile, as a
+prompt that still waits. So **send** during a turn only sets `isSendHeld`: the asks stay, the last row says the
+answers go out when the turn ends, and **don't send** takes it back. When the turn completes with an answer, a
+timer of `IDLE_MS` (300 ms) lets the engine go idle, then `flush` submits; if another turn has started by then,
+the answers wait for that one. A turn that was interrupted or failed clears the hold and sends nothing: the
+answers stay marked for the person to send.
 
 ## Notifications
 

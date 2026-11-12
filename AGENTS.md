@@ -117,6 +117,7 @@ What this code already paid for; `docs/design.md` has the detail.
 |---|---|---|
 | The small model listed asks already pinned, reworded or by number ("ask 1"), and the board doubled them | `catchAsks` | `CATCH_SYSTEM` says to leave them out, and `isRepeat` drops a question whose words mostly match a pinned ask |
 | A turn waited on the reply check | `classic.Stop` | The check runs on a `$.clock.after(0)` timer |
+| Answers sent during a turn reached Claude twice, their row left grey: the engine folds a plugin's prompt into the running turn, then runs it again | `send` | Held on the board (`isSendHeld`) and submitted `IDLE_MS` after the turn completes |
 | A pane opened unasked on a narrow terminal is not placed, and the list vanished from the band | `arrange` | A pane not placed is closed again, and the band keeps the list |
 | With many MCP servers connected, the engine's `claude-code-mcp` types pass TypeScript's depth limit (TS2589) | `plugin/tsconfig.json` | The plugin's types leave them out |
 | A value kept by an earlier version outlives a reload, with old fields | `board`, `tasks` atoms | Each has a shape tag; change it with the fields |
