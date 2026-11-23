@@ -13,8 +13,8 @@
     "setup": "node tools/setup.ts"
   },
   "devDependencies": {
-    "@anthropic-ai/claude-code": "2.1.321",
-    "@biomejs/biome": "2.6.6",
+    "@anthropic-ai/claude-code": "2.1.325",
+    "@biomejs/biome": "2.6.8",
     "@types/node": "24.19.2",
     "typescript": "6.0.3"
   }
